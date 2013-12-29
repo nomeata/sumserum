@@ -1,5 +1,5 @@
-
-var port = process.env.OPENSHIFT_NODEJS_PORT;
+var port = process.env.OPENSHIFT_NODEJS_PORT || 9999;
+var ip   = process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1";
 var http = require('http');
 var sockjs = require('sockjs');
 var node_static = require('node-static');
@@ -87,5 +87,5 @@ server.addListener('upgrade', function(req,res){
 
 sockjs.installHandlers(server, {prefix:'/game'});
 
-console.log(' [*] Listening on 0.0.0.0:' + port );
-server.listen(port, '0.0.0.0');
+console.log(' [*] Listening on ' + ip + ':' + port );
+server.listen(port, ip);
