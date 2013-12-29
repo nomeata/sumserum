@@ -1,3 +1,5 @@
+
+var port = process.env.OPENSHIFT_NODEJS_PORT;
 var http = require('http');
 var sockjs = require('sockjs');
 var node_static = require('node-static');
@@ -85,5 +87,5 @@ server.addListener('upgrade', function(req,res){
 
 sockjs.installHandlers(server, {prefix:'/game'});
 
-console.log(' [*] Listening on 0.0.0.0:9999' );
-server.listen(9999, '0.0.0.0');
+console.log(' [*] Listening on 0.0.0.0:' + port );
+server.listen(port, '0.0.0.0');
