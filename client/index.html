@@ -1,14 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-   <script src="http://cdn.sockjs.org/sockjs-0.3.min.js"></script>
-   <meta charset="utf-8">
-    <title>Sum Serum</title>
+	<style type="text/css">
+		#about {
+			width: 500px;
+			margin-left:auto;
+			margin-right:auto;
+			font-family: sans-serif;
+			text-align: justify;
+			-webkit-hyphens: auto;
+			-moz-hyphens: auto;
+			-ms-hyphens: auto;
+			hyphens: auto;
+		}
+	</style>
+	<script src="http://cdn.sockjs.org/sockjs-0.3.min.js"></script>
+	<meta charset="utf-8">
+	<title>Sum Serum</title>
 </head>
 
 <body>
 <div align="center">
-<canvas tabindex="1" id="canvas" align="center" width="500" height="500"
+<canvas tabindex="1" id="canvas" align="center" width="500" height="400"
         style="border:0px solid blue; background: lightgrey" />
 </div>
 
@@ -19,5 +32,21 @@
 <script src="engine.js" ></script>
 <script src="sumserum.js"></script>
 
+<div id="about">
+<h3>About Sum Serum</h3>
+
+<p>
+Sum Serum is an independent and unauthorized browser implementation of the very nice board game <a href="http://www.spiel-und-design.eu/index.php?seite=shop&kategorie=tabuluna&gruppe=1&Nr=0040"><b>Sim Serim</b></a> by Heinrich Glumpler. You can find <a href="http://boardgamegeek.com/filepage/39765/sim-serim-english-rules">English rules</a> on <a href="http://boardgamegeek.com/boardgame/30046/sim-serim">BoardGameGeek</a>.
+</p>
+
+<p>
+This implementation lets you play locally, with two player on one machine (make sure you do not let your opponent see what button you press), or via the internet. In that case, just press “Play online” and wait for someone else to join (or better arrange for someone else to join).
+</p>
+
+<p>Sum Serum was implemented by <a href="http://www.joachim-breitner.de/">Joachim Breitner</a> and is Free Software. Feel free to look <a href="http://git.nomeata.de/?p=sumserum.git">at the code</a> or <a href="https://github.com/nomeata/sumserum/issues">report a problem or a pull-request</a>. It builds on HTML5, Canvas, node.js and SockJS and is currently hosted by <a href="https://www.openshift.com/">OpenShift</a>.
+</p>
+
+
+</div>
 </body>
 </html>

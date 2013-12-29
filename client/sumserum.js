@@ -12,6 +12,9 @@ FIELD_HEIGHT = STONE_SIZE  * 2;
 DIAGONAL = Math.pow(Math.pow(FIELD_WIDTH,2) + Math.pow(FIELD_HEIGHT,2), 0.5);
 WOOD = "#A68064";
 
+CENTER_X = c.width/2;
+CENTER_Y = 0.75*FIELD_HEIGHT + (c.height - 0.75*FIELD_HEIGHT)/2;
+
 var local = [];
 var state;
 var tentative_state;
@@ -119,8 +122,8 @@ function at_field(coords, action) {
 	var m = coords[1];
 	ctx.save();
 	ctx.translate(
-		250 +                        n * FIELD_HEIGHT/2 - m * FIELD_HEIGHT / 2,
-		250 + 7 * FIELD_HEIGHT / 2 - n * FIELD_HEIGHT/2 - m * FIELD_HEIGHT / 2 );
+		CENTER_X +                        n * FIELD_HEIGHT/2 - m * FIELD_HEIGHT / 2,
+		CENTER_Y + 7 * FIELD_HEIGHT / 2 - n * FIELD_HEIGHT/2 - m * FIELD_HEIGHT / 2 );
 	action();
 	ctx.restore();
 }
@@ -288,7 +291,7 @@ function draw_message(msg) {
 	ctx.font = (0.5*FIELD_HEIGHT) + 'px sans-serif';
 	ctx.textAlign = 'center';
 	ctx.textBaseline = 'bottom';
-	ctx.fillText(msg, 250,250);
+	ctx.fillText(msg, CENTER_X,CENTER_Y);
 }
 
 function draw_key(side, i) {return function() {
@@ -373,10 +376,10 @@ function to_canvas(coords) {
 function to_field(coords) {
 	var x = coords[0];
 	var y = coords[1];
-	var m =    (x - 250)                   /FIELD_WIDTH
-	         - (y - 250 - 7*FIELD_HEIGHT/2)/FIELD_HEIGHT;
-	var n =  - (x - 250)                   /FIELD_WIDTH
-	         - (y - 250 - 7*FIELD_HEIGHT/2)/FIELD_HEIGHT;
+	var m =    (x - CENTER_X)                   /FIELD_WIDTH
+	         - (y - CENTER_Y - 7*FIELD_HEIGHT/2)/FIELD_HEIGHT;
+	var n =  - (x - CENTER_X)                   /FIELD_WIDTH
+	         - (y - CENTER_Y - 7*FIELD_HEIGHT/2)/FIELD_HEIGHT;
 	if (Math.pow(m - Math.round(m), 2) + Math.pow(n - Math.round(n), 2) < 1/8) {
 		m = Math.round(m);
 		n = Math.round(n);
