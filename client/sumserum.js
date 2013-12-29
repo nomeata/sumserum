@@ -42,6 +42,11 @@ function start_game(){
 
 // Buttons
 document.getElementById("playlocal").addEventListener("click", function () {
+	if (state && state.phase != FINISHED) {
+		if (!confirm("Do you really want to abort the current game?")) {
+			return
+		}
+	}
 	no_game();
 
 	local[PLAYER1] = true;
@@ -49,15 +54,25 @@ document.getElementById("playlocal").addEventListener("click", function () {
 	start_game();
 });
 
-
-
 document.getElementById("playonline").addEventListener("click", function () {
+	if (state && state.phase != FINISHED) {
+		if (!confirm("Do you really want to abort current game?")) {
+			return
+		}
+	}
 	no_game();
 
 	sockjs = new SockJS('/game');
 	draw_message("Connecting...");
 	sockjs.onmessage = sockjs_onmessage;
 	sockjs.onopen = sockjs_onopen;
+});
+
+window.addEventListener('beforeunload', function (e){
+	if (state && state.phase != FINISHED) {
+		e.returnValue = "You have an unfinished game running."
+		return e.returnValue;
+	}
 });
 
 // Handle server message
