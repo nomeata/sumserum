@@ -115,6 +115,14 @@ function interact(input) {
 	draw_game();
 }
 
+// Keyboard bindings
+function keys(side) {
+	// If side is the only local player, use 1-4 (the first set)
+	if (local[side] && ! local[other(side)]) return KEYS[PLAYER1]
+	// Otherwise, use both sets
+	return KEYS[side]
+}
+
 
 // Positioning functions
 function at_field(coords, action) {
@@ -296,7 +304,7 @@ function draw_message(msg) {
 
 function draw_key(side, i) {return function() {
 	draw_stone(EMPTY)();
-	var txt = KEYS[side][i];
+	var txt = keys(side)[i];
 	ctx.fillStyle = player_color(side);
 	ctx.font = (0.8*STONE_SIZE) + 'px sans-serif';
 	ctx.textAlign = 'center';
@@ -488,7 +496,7 @@ c.addEventListener('keypress', function(evt) {
 	if (key) {
 		var input;
 		for (var side = PLAYER1; side <= PLAYER2; side++) {
-			var i = KEYS[side].indexOf(key);
+			var i = keys(side).indexOf(key);
 			if (i >= 0)
 				input = { what: 'sel', side: side, n: i + 1};
 		}
