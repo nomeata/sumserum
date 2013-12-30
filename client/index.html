@@ -21,14 +21,14 @@
 
 <body>
 <div align="center">
+<button id="playlocal">Play local</button>
+<button id="playonline">Play online</button>
+</div>
+<div align="center">
 <canvas tabindex="1" id="canvas" align="center" width="500" height="400"
         style="border:0px solid blue; background: lightgrey" />
 </div>
 
-<div align="center">
-<button id="playlocal">Play local</button>
-<button id="playonline">Play online</button>
-</div>
 <script src="engine.js" ></script>
 <script src="sumserum.js"></script>
 
@@ -40,8 +40,12 @@ Sum Serum is an independent and unauthorized browser implementation of the very 
 </p>
 
 <p>
-This implementation lets you play locally, with two player on one machine (make sure you do not let your opponent see what button you press), or via the internet. In that case, just press “Play online” and wait for someone else to join (or better arrange for someone else to join).
+This implementation lets you play locally, with two player, or online:
 </p>
+<ul>
+<li>If you play locally, you probably do not want to select your number of stones with the mouse, as your opponent will see your selection. Therefore, the left player (black) can use the keys <tt>1</tt> up to <tt>4</tt> to make a (hopefully unseen) selection. The right player uses <tt>U</tt>, <tt>I</tt>, <tt>O</tt> and <tt>P</tt>, which just happen to be convenient keys on the right. It does not matter in which order the players make their choice.</li>
+<li>If you want to play online, just press “Play online” and wait for someone else to join (or better arrange for someone else to join).</li>
+</ul>
 
 <p>Sum Serum was implemented by <a href="http://www.joachim-breitner.de/">Joachim Breitner</a> and is Free Software. Feel free to look <a href="http://git.nomeata.de/?p=sumserum.git">at the code</a> or <a href="https://github.com/nomeata/sumserum/issues">report a problem or a pull-request</a>. It builds on HTML5, Canvas, node.js and SockJS and is currently hosted by <a href="https://www.openshift.com/">OpenShift</a>.
 </p>
