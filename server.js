@@ -41,6 +41,21 @@ function hookup(p1, p2) {
 	send(p2, {meta: "newgame", you: 2});
 }
 
+function clear(id) {
+	// Remove id from the waiting list
+	if (waiting_clients.hasOwnProperty(id)) {
+		var gameid = waiting_clients[id];
+		delete waiting[gameid];
+		delete waiting_clients[id];
+	}
+	// Remove id from the ongoing game list
+	if (opp.hasOwnProperty(id)){
+		send(opp[id], {meta:"left" });
+		delete opp[opp[id]];
+		delete opp[id];
+	}
+}
+
 var sockjs = sockjs.createServer(sockjs_opts);
 
 sockjs.on('connection', function(conn) {
@@ -52,11 +67,7 @@ sockjs.on('connection', function(conn) {
 		if (meta = msg.meta) {
 			console.log(conn.id, msg);
 			if (meta == "hookmeup") {
-				if (waiting_clients.hasOwnProperty(conn.id)) {
-					var gameid = waiting_clients[conn.id];
-					delete waiting[gameid];
-					delete waiting_clients[conn.id];
-				}
+				clear(conn.id);
 				var gameid = uuid().substr(0,8);
 
 				console.log('New waiting game ' + gameid + ' for ' + conn.id);
@@ -65,11 +76,7 @@ sockjs.on('connection', function(conn) {
 
 				send(conn.id, {meta: "gameid", gameid: gameid});
 			} else if (meta == "join") {
-				if (waiting_clients.hasOwnProperty(conn.id)) {
-					var gameid = waiting_clients[conn.id];
-					delete waiting[gameid];
-					delete waiting_clients[conn.id];
-				}
+				clear(conn.id);
 				var gameid = msg.gameid;
 
 				console.log('Player ' + conn.id + 'wants to join game ' + gameid);
@@ -95,16 +102,7 @@ sockjs.on('connection', function(conn) {
 
 	conn.on('close', function() {
 		console.log('closed', conn.id);
-		if (opp.hasOwnProperty(conn.id)){
-			send(opp[conn.id], {meta:"left" });
-			delete opp[opp[conn.id]];
-			delete opp[conn.id];
-		}
-		if (waiting_clients.hasOwnProperty[conn.id]) {
-			var gameid = waiting_clients[conn.id];
-			delete waiting_clients[conn.id];
-			delete waiting[gameid];
-		}
+		clear(conn.id);
 		delete clients[conn.id];
 	});
 });
