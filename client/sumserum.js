@@ -30,6 +30,7 @@ function no_game() {
 
 	if (sockjs) sockjs.close();
 	sockjs = undefined;
+	document.getElementById("shareurl").style.display = "none";
 
 }
 
@@ -41,6 +42,7 @@ function start_game(){
 	state.restart_game();
 	draw_game();
 	c.focus();
+	document.getElementById("shareurl").style.display = "none";
 }
 
 // Buttons
@@ -57,6 +59,7 @@ document.getElementById("playlocal").addEventListener("click", function () {
 	start_game();
 });
 
+// Play online
 document.getElementById("playonline").addEventListener("click", function () {
 	if (state && state.phase != FINISHED) {
 		if (!confirm("Do you really want to abort current game?")) {
@@ -71,6 +74,22 @@ document.getElementById("playonline").addEventListener("click", function () {
 	sockjs.onopen = sockjs_onopen;
 });
 
+
+// Related: join a game
+{
+	var joingameid;
+	var match = document.location.href.match(/#(.*)/);
+	window.location.hash='';
+	if (match) {joingameid = match[1]};
+	if (joingameid) {
+		console.log("Trying to join existing game " + joingameid);
+		sockjs = new SockJS('/game');
+		draw_message("Connecting...");
+		sockjs.onmessage = sockjs_onmessage;
+		sockjs.onopen = sockjs_onopen_join(joingameid);
+	}
+}
+
 window.addEventListener('beforeunload', function (e){
 	if (state && state.phase != FINISHED) {
 		e.returnValue = "You have an unfinished game running."
@@ -79,6 +98,10 @@ window.addEventListener('beforeunload', function (e){
 });
 
 // Handle server message
+function sockjs_onopen_join(gameid){return function() {
+	sockjs.send(JSON.stringify({meta: "join", gameid: gameid}));
+	draw_message("Waiting for another player to join...");
+}}
 function sockjs_onopen(){
 	sockjs.send(JSON.stringify({meta: "hookmeup"}));
 	draw_message("Waiting for another player to join...");
@@ -88,8 +111,13 @@ function sockjs_onmessage(event) {
 	var input = JSON.parse(event.data);
 	var meta;
 	if (meta = input.meta) {
-		// New game
-		if (meta == "newgame") {
+		if (meta == "gameid") {
+			var url = document.location.href.match(/(^[^#]*)/)[0];
+			var game_url = url + "#" + input.gameid;
+			document.getElementById("shareurl").value = game_url;
+			document.getElementById("shareurl").style.display = "block";
+		} else if (meta == "newgame") {
+			// New game
 			local[input.you] = true;
 			local[other(input.you)] = false;
 			start_game();
