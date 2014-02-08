@@ -116,6 +116,7 @@ function sockjs_onmessage(event) {
 			var game_url = url + "#" + input.gameid;
 			document.getElementById("shareurl").value = game_url;
 			document.getElementById("shareurl").style.display = "block";
+			window.setTimeout(function() {document.getElementById("shareurl").select()}, 10);
 		} else if (meta == "newgame") {
 			// New game
 			local[input.you] = true;
