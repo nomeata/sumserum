@@ -113,11 +113,11 @@ State.prototype.on_interaction = function(input){
 
 				if (this.is_game_finished()) {
 					this.to_phase(FINISHED)
-				}
-
-				if (this.placed[PLAYER1] == this.chosen[PLAYER1] &&
-				    this.placed[PLAYER2] == this.chosen[PLAYER2]) {
-					this.to_phase(CHOOSE);
+				} else  {
+					if (this.placed[PLAYER1] == this.chosen[PLAYER1] &&
+					    this.placed[PLAYER2] == this.chosen[PLAYER2]) {
+						this.to_phase(CHOOSE);
+					}
 				}
 			}
 		}
