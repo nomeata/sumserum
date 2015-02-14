@@ -176,6 +176,17 @@ function at_player_box(side, action) {
 	ctx.restore();
 }
 
+function at_count_box(side, action) {
+	ctx.save();
+	if (side == PLAYER1) {
+		ctx.translate(FIELD_WIDTH/2, 350-FIELD_HEIGHT/2);
+	} else {
+		ctx.translate(500-FIELD_WIDTH/2-2*FIELD_WIDTH, 350-FIELD_HEIGHT/2);
+	}
+	action();
+	ctx.restore();
+}
+
 function at_sel(n, action) {return function () {
 	ctx.save();
 	ctx.translate((n + 0.5) * FIELD_WIDTH, FIELD_HEIGHT/2);
@@ -314,6 +325,20 @@ function draw_player_box(side) {return function (){
 	ctx.fill();
 }}
 
+function draw_count_box(side) {return function (){
+	ctx.fillStyle = WOOD;
+	ctx.beginPath();
+	ctx.lineJoin="round";
+	//ctx.moveTo(FIELD_HEIGHT/2, FIELD_HEIGHT);
+	ctx.arc(FIELD_HEIGHT/2, FIELD_HEIGHT/2,
+	        FIELD_HEIGHT/2, 0.5*Math.PI, 1.5*Math.PI);
+	ctx.lineTo(2*FIELD_WIDTH - FIELD_HEIGHT/2, 0);
+	ctx.arc(2*FIELD_WIDTH - FIELD_HEIGHT/2, FIELD_HEIGHT/2,
+	        FIELD_HEIGHT/2, 1.5*Math.PI, 0.5*Math.PI);
+	ctx.closePath();
+	ctx.fill();
+}}
+
 function draw_text(side, txt) {return function() {
 	ctx.fillStyle = player_color(side);
 	ctx.font = (0.5*FIELD_HEIGHT) + 'px sans-serif';
@@ -341,8 +366,23 @@ function draw_key(side, i) {return function() {
 	ctx.fillText(txt, 0, 0.1*STONE_SIZE);
 }}
 
+function draw_player_count(side) {return function() {
+	ctx.save();
+	ctx.translate(1.2 * FIELD_WIDTH, FIELD_HEIGHT/2);
+	var txt = state.stones_left(side)+ "×";
+	ctx.fillStyle = player_color(side);
+	ctx.font = (0.8*STONE_SIZE) + 'px sans-serif';
+	ctx.textAlign = 'right';
+	ctx.textBaseline = 'middle';
+	ctx.fillText(txt, 0, 0.1*STONE_SIZE);
+	ctx.translate(0.3*FIELD_WIDTH, 0);
+	draw_stone(side)();
+	ctx.restore();
+}}
+
 function draw_player_input(side) {return function (){
-	for (var i = 0; i < 4 ; i++) {
+	var upto = state.available_stones(side);
+	for (var i = 0; i < upto ; i++) {
 		at_sel(i, draw_key(side, i))();
 	}
 }}
@@ -354,7 +394,7 @@ function draw_player_selection(side) {return function (){
 		} else if (state.placed[side] <= i && i < state.chosen[side]) {
 			at_sel(i, draw_stone(side))();
 		} else {
-			at_sel(i, draw_stone(EMPTY))();
+			// at_sel(i, draw_stone(EMPTY))();
 		}
 	}
 }}
@@ -399,6 +439,10 @@ function draw_game() {
 		state.good[side].forEach(function (line) {
 			draw_line(side, GOOD, line);
 		})
+	}
+	for (var side = PLAYER1; side <= PLAYER2; side++) {
+		at_count_box(side, draw_count_box(side));
+		at_count_box(side, draw_player_count(side));
 	}
 }
 
@@ -502,7 +546,7 @@ c.addEventListener('mousedown', function(evt) {
 	}
 
 	var sel = to_sel(to_canvas([evt.clientX, evt.clientY]));
-	if (sel && local[sel.side]) {
+	if (sel && local[sel.side] && sel.n <= state.available_stones(sel.side)) {
 		interact(sel);
 		return
 	}

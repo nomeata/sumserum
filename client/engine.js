@@ -10,6 +10,8 @@ PLAYER2 = 2;
 GOOD = 1;
 BAD = 2;
 
+STONES = 24;
+
 var KEYS = [];
 KEYS[PLAYER1] = ['1','2','3','4'];
 KEYS[PLAYER2] = ['U','I','O','P'];
@@ -56,11 +58,19 @@ State.prototype.clone = function () {
 // Game mechanics
 State.prototype.to_phase = function (new_phase) {
 	if (new_phase == CHOOSE) {
-		this.chosen[PLAYER1] = 0;
-		this.chosen[PLAYER2] = 0;
-		this.placed[PLAYER1] = 0;
-		this.placed[PLAYER2] = 0;
-		this.phase = CHOOSE;
+		if (this.available_stones(PLAYER1) == 0) {
+			this.fill_with(PLAYER2);
+			this.to_phase(FINISHED);
+		} else if (this.available_stones(PLAYER2) == 0) {
+			this.fill_with(PLAYER1);
+			this.to_phase(FINISHED);
+		} else {
+			this.chosen[PLAYER1] = 0;
+			this.chosen[PLAYER2] = 0;
+			this.placed[PLAYER1] = 0;
+			this.placed[PLAYER2] = 0;
+			this.phase = CHOOSE;
+		}
 	}
 	if (new_phase == SELECT) {
 		if (this.chosen[PLAYER1] < this.chosen[PLAYER2]) {
@@ -113,11 +123,9 @@ State.prototype.on_interaction = function(input){
 
 				if (this.is_game_finished()) {
 					this.to_phase(FINISHED)
-				} else  {
-					if (this.placed[PLAYER1] == this.chosen[PLAYER1] &&
+				} else if (this.placed[PLAYER1] == this.chosen[PLAYER1] &&
 					    this.placed[PLAYER2] == this.chosen[PLAYER2]) {
-						this.to_phase(CHOOSE);
-					}
+					this.to_phase(CHOOSE);
 				}
 			}
 		}
@@ -209,6 +217,36 @@ State.prototype.rows = (function() {
 	}
 	return rows;
 })();
+
+State.prototype.used_stones = function (side) {
+	var count = 0;
+	for (m = 0 ; m < 7; m++) {
+		for (n = 0 ; n < 7; n++) {
+			if (m == 0 && n == 0 || m == 6 && n == 6) continue;
+			if (this.board[m][n] == side) count++
+		}
+	}
+	return count
+}
+
+State.prototype.fill_with = function (side) {
+	var count = 0;
+	for (m = 0 ; m < 7; m++) {
+		for (n = 0 ; n < 7; n++) {
+			if (m == 0 && n == 0 || m == 6 && n == 6) continue;
+			if (this.board[m][n] == EMPTY) this.board[m][n] = side;
+		}
+	}
+	return count
+}
+
+State.prototype.stones_left = function (side) {
+	return STONES - this.used_stones(side);
+}
+
+State.prototype.available_stones = function (side) {
+	return Math.min(this.stones_left(side),4);
+}
 
 State.prototype.valid_rows = function () {
 	var valid_rows = [];
