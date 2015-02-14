@@ -5,6 +5,18 @@
 var c=document.getElementById("canvas");
 var ctx=c.getContext("2d");
 
+var foreground_pattern = '#55BF12';
+
+var background_pattern;
+var imageObj2 = new Image();
+imageObj2.onload = function() {
+	background_pattern = ctx.createPattern(imageObj2, 'repeat');
+	if (state) draw_game();
+};
+imageObj2.src = 'wood_pattern.png';
+
+
+
 // Some constants and enums
 STONE_SIZE=25;
 FIELD_WIDTH = STONE_SIZE * 2;
@@ -195,9 +207,14 @@ function at_sel(n, action) {return function () {
 }}
 
 // Drawing functions
+function draw_background () {
+	ctx.fillStyle=background_pattern;
+	ctx.fillRect(0, 0, c.width, c.height);
+}
+
 function draw_field () {
 	//ctx.strokeStyle="#FF0000";
-	ctx.fillStyle=WOOD;
+	ctx.fillStyle=foreground_pattern;
 	ctx.beginPath();
 	ctx.moveTo(-FIELD_WIDTH/2,0);
 	ctx.quadraticCurveTo(0, FIELD_HEIGHT/2, FIELD_WIDTH/2,0);
@@ -207,7 +224,7 @@ function draw_field () {
 };
 
 function player_color(side) {
-	if (side == EMPTY) return "#C9A086";
+	if (side == EMPTY) return "rgba(128,128,128,0.0)"; // "#C9A086";
 	if (side == PLAYER1) return "#000000";
 	if (side == PLAYER2) return "#FFFFFF";
 	if (side == SOON_PLAYER1) return "rgba(0,0,0,0.5)";
@@ -227,20 +244,20 @@ function gob_color(gob) {
 	console.log('Invalid gob: ' + gob);
 }
 
-function draw_stone (side, halo, tentative) {return function() {
+function draw_halo (side) {return function() {
 	ctx.save();
-	ctx.fillStyle = player_color(EMPTY);
-	if (halo) {
-		ctx.shadowColor = '#FFFFFF';
-		ctx.shadowBlur = 8;
-		ctx.shadowOffsetX = 0;
-		ctx.shadowOffsetY = 0;
-	}
+	ctx.fillStyle = player_color(side);
+	ctx.shadowColor = player_color(side);
+	ctx.shadowBlur = 8;
+	ctx.shadowOffsetX = -1000;
+	ctx.shadowOffsetY = 0;
 	ctx.beginPath();
-	ctx.arc(0,0,STONE_SIZE/2, 0, 2*Math.PI);
+	ctx.arc(1000,0,STONE_SIZE/3, 0, 2*Math.PI);
 	ctx.fill();
 	ctx.restore();
+}}
 
+function draw_stone (side, tentative) {return function() {
 	if (tentative)
 		ctx.fillStyle = player_color_tentative(side);
 	else
@@ -312,7 +329,7 @@ function draw_line(side, gob, line) {
 }
 
 function draw_player_box(side) {return function (){
-	ctx.fillStyle = WOOD;
+	ctx.fillStyle=foreground_pattern;
 	ctx.beginPath();
 	ctx.lineJoin="round";
 	//ctx.moveTo(FIELD_HEIGHT/2, FIELD_HEIGHT);
@@ -326,7 +343,7 @@ function draw_player_box(side) {return function (){
 }}
 
 function draw_count_box(side) {return function (){
-	ctx.fillStyle = WOOD;
+	ctx.fillStyle=foreground_pattern;
 	ctx.beginPath();
 	ctx.lineJoin="round";
 	//ctx.moveTo(FIELD_HEIGHT/2, FIELD_HEIGHT);
@@ -357,9 +374,9 @@ function draw_message(msg) {
 }
 
 function draw_key(side, i) {return function() {
-	draw_stone(EMPTY)();
+	draw_stone(side)();
 	var txt = keys(side)[i];
-	ctx.fillStyle = player_color(side);
+	ctx.fillStyle = player_color(other(side));
 	ctx.font = (0.8*STONE_SIZE) + 'px sans-serif';
 	ctx.textAlign = 'center';
 	ctx.textBaseline = 'middle';
@@ -390,7 +407,7 @@ function draw_player_input(side) {return function (){
 function draw_player_selection(side) {return function (){
 	for (var i = 0; i < 4 ; i++) {
 		if (state.placed[side] <= i && i < tentative_state.placed[side]) {
-			at_sel(i, draw_stone(side,false,true))();
+			at_sel(i, draw_stone(side,true))();
 		} else if (state.placed[side] <= i && i < state.chosen[side]) {
 			at_sel(i, draw_stone(side))();
 		} else {
@@ -401,14 +418,17 @@ function draw_player_selection(side) {return function (){
 
 function draw_game() {
 	ctx.clearRect(0, 0, c.width, c.height);
+	draw_background();
 	state.board.forEach(function (row, m) {
 		row.forEach(function (player, n) {
 			at_field([m, n], draw_field);
 			at_field([m, n], draw_stone(
 				tentative_state.at([m,n]),
-				may_choose() && tentative_state.is_valid_field([m,n]),
 				state.at([m,n]) != tentative_state.at([m,n])
 				));
+			if (may_choose() &&  tentative_state.is_valid_field([m,n])) {
+				at_field([m,n], draw_halo(state.to_place()[0]));
+			}
 		});
 	});
 	for (var side = PLAYER1; side <= PLAYER2; side++) {
