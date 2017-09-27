@@ -1,0 +1,22 @@
+[Unit]
+Description=Sumserum Server
+
+[Service]
+ExecStart=/usr/bin/nodejs /home/jojo/sumserum/server.js
+# Required on some systems
+WorkingDirectory=/home/jojo/sumserum
+Restart=always
+# Restart service after 10 seconds if node service crashes
+RestartSec=10
+# Output to syslog
+StandardError=syslog
+SyslogIdentifier=sumserum
+User=nobody
+Group=nogroup
+#Environment=NODE_ENV=production PORT=1337
+PrivateTmp=yeso
+#InaccessibleDirectories=/home
+ReadOnlyDirectories=/
+
+[Install]
+WantedBy=multi-user.target
