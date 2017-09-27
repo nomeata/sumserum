@@ -1,5 +1,5 @@
-var port = process.env.OPENSHIFT_NODEJS_PORT || 9999;
-var ip   = process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1";
+var port = 9999;
+var ip   = "0.0.0.0";
 var http = require('http');
 var sockjs = require('sockjs');
 var node_static = require('node-static');
