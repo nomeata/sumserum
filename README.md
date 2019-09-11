@@ -17,5 +17,4 @@ Breitner](http://www.joachim-breitner.de/) and is Free Software. Feel
 free to look [at the code](http://git.nomeata.de/?p=sumserum.git) or
 [report a problem or a
 pull-request](https://github.com/nomeata/sumserum/issues). It builds on
-HTML5, Canvas, node.js and SockJS and is currently hosted by
-[OpenShift](https://www.openshift.com/).
+HTML5, Canvas, node.js and SockJS.
