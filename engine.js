@@ -4,13 +4,13 @@
 
 
 // Some constants and enums
-EMPTY = 0;
-PLAYER1 = 1;
-PLAYER2 = 2;
-GOOD = 1;
-BAD = 2;
+const EMPTY = 0;
+const PLAYER1 = 1;
+const PLAYER2 = 2;
+const GOOD = 1;
+const BAD = 2;
 
-STONES = 24;
+const STONES = 24;
 
 var KEYS = [];
 KEYS[PLAYER1] = ['1','2','3','4'];
@@ -49,7 +49,7 @@ State.prototype.restart_game = function() {
 State.prototype.clone = function () {
 	var clone = new State();
 	var props = deepcopy(this);
-	for (p in props){
+	for (var p in props){
 		clone[p] = props[p];
 	}
 	return clone;
@@ -114,7 +114,7 @@ State.prototype.on_interaction = function(input){
 		if (this.phase == SELECT) {
 			var row_rest = this.is_valid_field(field);
 			if (row_rest) {
-				var field, player;
+				var field, player, side;
 				var todo = this.to_place();
 				while ((field = row_rest.shift()) && (side = todo.shift())){
 					this.board[field[0]][field[1]] = side;
@@ -140,9 +140,9 @@ State.prototype.on_interaction = function(input){
 // An empty board
 State.prototype.empty_board = function () {
 	var board = [];
-	for (m = 0 ; m < 7; m++) {
+	for (var m = 0 ; m < 7; m++) {
 		if (!board[m]) board[m] = [];
-		for (n = 0 ; n < 7; n++) {
+		for (var n = 0 ; n < 7; n++) {
 			if (m == 0 && n == 0 || m == 6 && n == 6) continue;
 			// board[m][n] = 1 + Math.floor( 2 * Math.random());
 			board[m][n] = EMPTY;
@@ -208,7 +208,7 @@ State.prototype.sumlength = function(rows) {
 State.prototype.rows = (function() {
 	var rows = [];
 	for (var i = 1; i< 12; i++) { // 5 rows, from bottom to top
-		row = [];
+		var row = [];
 		for (var j = 0; j < Math.min(i + 1, 13 - i) ; j++) {
 			row[j] = [Math.max(0, i - 6) + j,
 			         Math.min(i, 6)     - j];
@@ -220,8 +220,8 @@ State.prototype.rows = (function() {
 
 State.prototype.used_stones = function (side) {
 	var count = 0;
-	for (m = 0 ; m < 7; m++) {
-		for (n = 0 ; n < 7; n++) {
+	for (var m = 0 ; m < 7; m++) {
+		for (var n = 0 ; n < 7; n++) {
 			if (m == 0 && n == 0 || m == 6 && n == 6) continue;
 			if (this.board[m][n] == side) count++
 		}
@@ -231,8 +231,8 @@ State.prototype.used_stones = function (side) {
 
 State.prototype.fill_with = function (side) {
 	var count = 0;
-	for (m = 0 ; m < 7; m++) {
-		for (n = 0 ; n < 7; n++) {
+	for (var m = 0 ; m < 7; m++) {
+		for (var n = 0 ; n < 7; n++) {
 			if (m == 0 && n == 0 || m == 6 && n == 6) continue;
 			if (this.board[m][n] == EMPTY) this.board[m][n] = side;
 		}
@@ -314,3 +314,5 @@ function other(side) {
 	if (side == PLAYER2) return PLAYER1;
 }
 
+
+export { other, PLAYER1, PLAYER2, EMPTY, State, CHOOSE, SELECT, FINISHED, KEYS, GOOD, BAD }

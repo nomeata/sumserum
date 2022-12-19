@@ -1,3 +1,7 @@
+import { joinRoom } from 'https://cdn.skypack.dev/pin/trystero@v0.11.8-pxKZpWfVVzXootkGlZMp/mode=imports,min/optimized/trystero.js';
+import { other, PLAYER1, PLAYER2, EMPTY, State, CHOOSE, SELECT, FINISHED, KEYS, GOOD, BAD } from './engine.js';
+
+
 //
 // UI elements
 //
@@ -18,19 +22,20 @@ imageObj2.src = 'wood_pattern.png';
 
 
 // Some constants and enums
-STONE_SIZE=25;
-FIELD_WIDTH = STONE_SIZE * 2;
-FIELD_HEIGHT = STONE_SIZE  * 2;
-DIAGONAL = Math.pow(Math.pow(FIELD_WIDTH,2) + Math.pow(FIELD_HEIGHT,2), 0.5);
-WOOD = "#A68064";
+const STONE_SIZE=25;
+const FIELD_WIDTH = STONE_SIZE * 2;
+const FIELD_HEIGHT = STONE_SIZE  * 2;
+const DIAGONAL = Math.pow(Math.pow(FIELD_WIDTH,2) + Math.pow(FIELD_HEIGHT,2), 0.5);
+const WOOD = "#A68064";
 
-CENTER_X = c.width/2;
-CENTER_Y = 0.75*FIELD_HEIGHT + (c.height - 0.75*FIELD_HEIGHT)/2;
+const CENTER_X = c.width/2;
+const CENTER_Y = 0.75*FIELD_HEIGHT + (c.height - 0.75*FIELD_HEIGHT)/2;
 
 var local = [];
 var state;
 var tentative_state;
-var sockjs;
+var room;
+var sendMove;
 
 draw_message("Welcome to Sum Serum.");
 
@@ -40,8 +45,9 @@ function no_game() {
 	tentative_state = undefined;
 	ctx.clearRect(0, 0, c.width, c.height);
 
-	if (sockjs) sockjs.close();
-	sockjs = undefined;
+	if (room) room.leave();
+	room = undefined;
+        sendMove = undefined;
 	document.getElementById("shareurl").style.display = "none";
 
 }
@@ -80,25 +86,58 @@ document.getElementById("playonline").addEventListener("click", function () {
 	}
 	no_game();
 
-	sockjs = new SockJS('/game');
+	const roomid = (Math.random() + 1).toString(36).substring(7);
+	room = joinRoom({appId: 'sumserum.nomeata.de'}, roomid)
+        const [sendNewGame, _getNewGame] = room.makeAction('newGame')
+
 	draw_message("Connecting...");
-	sockjs.onmessage = sockjs_onmessage;
-	sockjs.onopen = sockjs_onopen;
+
+	var url = document.location.href.match(/(^[^#]*)/)[0];
+	var game_url = url + "#" + roomid;
+	document.getElementById("shareurl").value = game_url;
+	document.getElementById("shareurl").style.display = "block";
+	window.setTimeout(function() {document.getElementById("shareurl").select()}, 10);
+
+        draw_message("Waiting for another player to join...");
+        room.onPeerJoin(peerid => {
+          draw_message("Other player has joined...");
+          // I’m the first player, so I toss the coin
+          const me = Math.floor(Math.random() * 2);
+          const them = other(me)
+          sendNewGame({you: them})
+
+          const [sendMove_, getMove] = room.makeAction('move');
+          sendMove = sendMove_;
+          getMove(onMove);
+
+          local[me] = true;
+          local[them] = false;
+          start_game();
+
+        });
 });
 
 
 // Related: join a game
 {
-	var joingameid;
+	var roomid;
 	var match = document.location.href.match(/#(.*)/);
 	window.location.hash='';
-	if (match) {joingameid = match[1]};
-	if (joingameid) {
-		console.log("Trying to join existing game " + joingameid);
-		sockjs = new SockJS('/game');
+	if (match) {roomid = match[1]};
+	if (roomid) {
+		console.log("Trying to join game " + roomid);
 		draw_message("Connecting...");
-		sockjs.onmessage = sockjs_onmessage;
-		sockjs.onopen = sockjs_onopen_join(joingameid);
+		room = joinRoom({appId: 'sumserum.nomeata.de'}, roomid)
+                const [_sendNewGame, getNewGame] = room.makeAction('newGame')
+                getNewGame(msg => {
+	          draw_message("Starting game...");
+                  local[msg.you] = true;
+                  local[other(msg.you)] = false;
+                  const [sendMove_, getMove] = room.makeAction('move')
+                  sendMove = sendMove_
+                  getMove(onMove)
+                  start_game();
+                })
 	}
 }
 
@@ -109,50 +148,16 @@ window.addEventListener('beforeunload', function (e){
 	}
 });
 
-// Handle server message
-function sockjs_onopen_join(gameid){return function() {
-	sockjs.send(JSON.stringify({meta: "join", gameid: gameid}));
-	draw_message("Waiting for another player to join...");
-}}
-function sockjs_onopen(){
-	sockjs.send(JSON.stringify({meta: "hookmeup"}));
-	draw_message("Waiting for another player to join...");
-}
-function sockjs_onmessage(event) {
-	//console.log("data", event.data);
-	var input = JSON.parse(event.data);
-	var meta;
-	if (meta = input.meta) {
-		if (meta == "gameid") {
-			var url = document.location.href.match(/(^[^#]*)/)[0];
-			var game_url = url + "#" + input.gameid;
-			document.getElementById("shareurl").value = game_url;
-			document.getElementById("shareurl").style.display = "block";
-			window.setTimeout(function() {document.getElementById("shareurl").select()}, 10);
-		} else if (meta == "newgame") {
-			// New game
-			local[input.you] = true;
-			local[other(input.you)] = false;
-			start_game();
-		} else if (meta == "left") {
-			no_game();
-			draw_message("Your opponent has left the game.");
-		} else if (meta == "error") {
-			draw_message("Error: " + meta.error);
-		} else {
-			console.log(meta);
-		}
-	} else {
-		// Opponent interaction
-		state.on_interaction(input)
-		draw_game();
-	}
+function onMove(move) {
+        // Opponent interaction
+        state.on_interaction(move)
+        draw_game();
 };
 
 function interact(input) {
 	state.on_interaction(input);
 	// Send interaction if this is a remote game
-	if (sockjs && (local[PLAYER1] != local[PLAYER2])) sockjs.send(JSON.stringify(input));
+	if (sendMove && (local[PLAYER1] != local[PLAYER2])) sendMove(input);
 	draw_game();
 }
 
