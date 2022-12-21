@@ -34,7 +34,9 @@ const CENTER_Y = 0.75*FIELD_HEIGHT + (c.height - 0.75*FIELD_HEIGHT)/2;
 var local = [];
 var state;
 var tentative_state;
+// state for online play
 var room;
+var opponent;
 var sendMove;
 
 draw_message("Welcome to Sum Serum.");
@@ -48,6 +50,7 @@ function no_game() {
 	if (room) room.leave();
 	room = undefined;
         sendMove = undefined;
+	opponent = undefined;
 	document.getElementById("shareurl").style.display = "none";
 
 }
@@ -100,7 +103,12 @@ document.getElementById("playonline").addEventListener("click", function () {
 
         draw_message("Waiting for another player to join...");
         room.onPeerJoin(peerid => {
+	  // Ignore if game is already in progress
+	  if (state) { return }
+
           draw_message("Other player has joined...");
+	  opponent = peerid;
+
           // I’m the first player, so I toss the coin
           const me = Math.floor(Math.random() * 2);
           const them = other(me)
@@ -113,8 +121,13 @@ document.getElementById("playonline").addEventListener("click", function () {
           local[me] = true;
           local[them] = false;
           start_game();
-
         });
+        room.onPeerLeave(peerid => {
+	  if (peerid == opponent) {
+	    no_game();
+            draw_message("Your opponent has left the game.");
+	  }
+	});
 });
 
 
@@ -128,8 +141,10 @@ document.getElementById("playonline").addEventListener("click", function () {
 		console.log("Trying to join game " + roomid);
 		draw_message("Connecting...");
 		room = joinRoom({appId: 'sumserum.nomeata.de'}, roomid)
+
                 const [_sendNewGame, getNewGame] = room.makeAction('newGame')
-                getNewGame(msg => {
+                getNewGame((msg, peerid) => {
+		  opponent = peerid;
 	          draw_message("Starting game...");
                   local[msg.you] = true;
                   local[other(msg.you)] = false;
@@ -137,6 +152,13 @@ document.getElementById("playonline").addEventListener("click", function () {
                   sendMove = sendMove_
                   getMove(onMove)
                   start_game();
+
+		  room.onPeerLeave(peerid => {
+		    if (peerid == opponent) {
+		      no_game();
+		      draw_message("Your opponent has left the game.");
+		    }
+		  });
                 })
 	}
 }
