@@ -110,7 +110,7 @@ document.getElementById("playonline").addEventListener("click", function () {
 	  opponent = peerid;
 
           // I’m the first player, so I toss the coin
-          const me = Math.floor(Math.random() * 2);
+          const me = 1 + Math.floor(Math.random() * 2);
           const them = other(me)
           sendNewGame({you: them})
 
