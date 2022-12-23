@@ -1,8 +1,8 @@
 ### About Sum Serum
 
 Sum Serum is an independent and unauthorized browser implementation of
-the very nice board game [**Sim
-Serim**](http://www.spiel-und-design.eu/index.php?seite=shop&kategorie=tabuluna&gruppe=1&Nr=0040)
+the very nice board game **Sim
+Serim**
 by Heinrich Glumpler. You can find [English
 rules](http://boardgamegeek.com/filepage/39765/sim-serim-english-rules)
 on [BoardGameGeek](http://boardgamegeek.com/boardgame/30046/sim-serim).
